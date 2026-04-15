@@ -1,59 +1,88 @@
 def create_board():
-    return [" " for _ in range(9)]
+    return [[" " for _ in range(3)] for _ in range(3)]
+
 
 def display_board(board):
     print("\n")
-    print(board[0] + " | " + board[1] + " | " + board[2])
-    print("--+---+--")
-    print(board[3] + " | " + board[4] + " | " + board[5])
-    print("--+---+--")
-    print(board[6] + " | " + board[7] + " | " + board[8])
+    for i in range(3):
+        print(" | ".join(board[i]))
+        if i < 2:
+            print("--+---+--")
     print("\n")
 
-def check_winner(board, player):
-    win_positions = [
-        (0,1,2),(3,4,5),(6,7,8),
-        (0,3,6),(1,4,7),(2,5,8),
-        (0,4,8),(2,4,6)
-    ]
-    for pos in win_positions:
-        if board[pos[0]] == board[pos[1]] == board[pos[2]]:
+
+def check_win(board, player):
+    # Rows
+    for row in board:
+        if row.count(player) == 3:
             return True
+
+    # Columns
+    for col in range(3):
+        if all(board[row][col] == player for row in range(3)):
+            return True
+
+    # Diagonals
+    if all(board[i][i] == player for i in range(3)):
+        return True
+    if all(board[i][2 - i] == player for i in range(3)):
+        return True
+
     return False
+
+
+def check_tie(board):
+    for row in board:
+        if " " in row:
+            return False
+    return True
+
 
 def play_game():
     board = create_board()
-    player = "X"
+    current_player = "X"
 
-    for turn in range(9):
+    while True:
         display_board(board)
 
         try:
-            move = int(input(f"Player {player}, enter position (0-8): "))
-        except:
-            print("Enter number only!")
+            row = int(input(f"Player {current_player}, enter row (0-2): "))
+            col = int(input(f"Player {current_player}, enter col (0-2): "))
+        except ValueError:
+            print("Invalid input! Enter numbers only.")
             continue
 
-        if move < 0 or move > 8 or board[move] != " ":
-            print("Invalid move!")
+        if row not in range(3) or col not in range(3):
+            print("Out of range! Try again.")
             continue
 
-        board[move] = player
+        if board[row][col] != " ":
+            print("Cell already taken! Try again.")
+            continue
 
-        if check_winner(board, player):
+        board[row][col] = current_player
+
+        if check_win(board, current_player):
             display_board(board)
-            print(f"🎉 Player {player} wins!")
-            return
+            print(f"🎉 Player {current_player} wins!")
+            break
 
-        player = "O" if player == "X" else "X"
+        if check_tie(board):
+            display_board(board)
+            print("🤝 It's a tie!")
+            break
 
-    display_board(board)
-    print("😐 It's a Tie!")
+        current_player = "O" if current_player == "X" else "X"
 
-# Play again option
-while True:
-    play_game()
-    again = input("Play again? (yes/no): ").lower()
-    if again != "yes":
-        print("Game Ended")
-        break
+
+def main():
+    while True:
+        play_game()
+        again = input("Do you want to play again? (yes/no): ").lower()
+        if again != "yes":
+            print("Thanks for playing!")
+            break
+
+
+if __name__ == "__main__":
+    main()
